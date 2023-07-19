@@ -1,7 +1,8 @@
+import axios from "axios";
 import styles from "../styles/Edit.module.css"
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "~/utils/api";
 
 export default function Edit() {
@@ -30,19 +31,14 @@ function AuthShowcase() {
   const [bio, setBio] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [image, setImage] = useState<File | undefined | null>(undefined)
 
-  // const handleSubmit = async (e) => {
-  //     e.preventDefault()
-  //     try {
-  //         api.updateUser.updateUser.useMutation({
-  //             onMutate: async (a) => {
-  //                 a.name = name
-  //             }
-  //         })
-  //     } catch(error) {
-  //       console.log(error)
-  //     }
-  // }
+  const [presignedUrl, setPresignedUrl] = useState<string | null>(null);
+  const { mutateAsync: fetchPresignedUrls } = api.s3.getStandardUploadPresignedUrl.useMutation();
+  const [submitDisabled, setSubmitDisabled] = useState(false)
+  const apiUtils = api.useContext()
+
+
   useEffect(() => {
   if (sessionData?.user) {
     setName(sessionData.user.name || '');
@@ -55,34 +51,60 @@ function AuthShowcase() {
 
   const editUser = api.updateUser.updateUser.useMutation();
 
-  const handleSubmit = async (e: any) => {
-    if (!sessionData?.user.userId || !sessionData) return
-
+  const handleSubmit = useCallback(async (e: any) => {
+    if (!sessionData?.user.userId || !sessionData) return;
     e.preventDefault();
 
     try {
-      editUser.mutate({
-        id: sessionData.user.userId,
-        name: name,
-        email: email,
-        bio: bio,
-        phone: phone,
-        password: password,
-      })
-      sessionData.user.name = name
-      sessionData.user.email = email
-      sessionData.user.bio = bio
-      sessionData.user.phone = phone
-      sessionData.user.password = password
-    } catch {
-      console.log('error')
-    }
-  }
+      if (presignedUrl && image) {
+        await axios.put(presignedUrl, image.slice(), {
+          headers: { "Content-Type": image.type },
+        });
+        console.log("Successfully uploaded ", image.name);
 
-  // const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-  //   undefined, // no input
-  //   { enabled: sessionData?.user !== undefined }
-  // );
+        const imageUrl = `https://auth-app-profile-pics.s3.us-west-1.amazonaws.com/${image.name}`;
+        console.log(imageUrl)
+
+        // Update user data after the image is uploaded
+        try {
+          await editUser.mutate({
+            id: sessionData.user.userId,
+            name: name,
+            email: email,
+            bio: bio,
+            phone: phone,
+            password: password,
+            image: imageUrl,
+          });
+
+          // Update sessionData after the user data is edited
+          sessionData.user.name = name;
+          sessionData.user.email = email;
+          sessionData.user.bio = bio;
+          sessionData.user.phone = phone;
+          sessionData.user.password = password;
+          sessionData.user.image = imageUrl,
+
+          console.log("User data updated");
+        } catch (error) {
+          console.log("Error editing user data:", error);
+        }
+      }
+    } catch (error) {
+      console.log("Error uploading image:", error);
+    }
+  }, [presignedUrl, image, name, email, bio, phone, password, sessionData]);
+
+  // Fetch presigned URL when the image changes
+  useEffect(() => {
+    if (image) {
+      fetchPresignedUrls({ key: image.name })
+        .then((url) => {
+          setPresignedUrl(url);
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [image]);
 
   return (
     <>
@@ -100,11 +122,11 @@ function AuthShowcase() {
             <p>Profile</p>
             <p>Some info may be visible to other people</p>
           </div>
-        f</div>
+        </div>
         <div>
           <p>Photo</p>
           <img src={sessionData?.user.image} alt="" />
-          <input type="file" src="" alt="" />
+          <input type="file" src="" alt="" onChange={(e) => e.target.files ? setImage(e.target.files[0]) : null} />
         </div>
         <div>
           <p>Name</p>
@@ -136,6 +158,6 @@ function AuthShowcase() {
         </div>
         </form>
       </div>
-</>
+  </>
   );
 }

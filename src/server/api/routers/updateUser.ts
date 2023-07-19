@@ -10,7 +10,8 @@ export const updateUserRouter = createTRPCRouter({
         email: z.string().optional(),
         bio: z.string().optional(),
         phone: z.string(). optional(),
-        password: z.string().optional()
+        password: z.string().optional(),
+        image: z.string().optional()
       })
     )
     .mutation(async ({ ctx, input }) => {
