@@ -12,15 +12,41 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3rem;
   padding: 4rem 1rem;
-
-  border: 1px solid black;
 }
 
 .profileContainer {
   width: 80%;
-  border: 1px solid orange;
+  border: 1px solid rgba(224, 224, 224, 1);
+  border-radius: 12px;
+}
+
+.editProfileContainer {
+  width: 80%;
+  border: 1px solid rgba(224, 224, 224, 1);
+  border-radius: 12px;
+}
+
+.editProfileContainer div {
+  border-top: 1px solid rgba(224, 224, 224, 1);
+  padding: 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.profileContainer div {
+  border-top: 1px solid rgba(224, 224, 224, 1);
+  padding: 1rem 3rem;
+}
+
+.profileContainer div:nth-child(1) {
+  border-top: 0;
+}
+
+.profileContainer div img {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
 }
 
 .top {
@@ -36,7 +62,8 @@
 .top a {
   border: 1px solid rgba(130,130,130,1);
   background-color: transparent;
-  padding: .2rem 1.5rem;
+  padding: .3rem 1.8rem;
+  color: rgba(130, 130, 130, 1);
   cursor: pointer;
   border-radius: 12px;
 }
@@ -44,11 +71,55 @@
 .top div {
   display: flex;
   flex-direction: column;
+  padding: 0;
 }
 
 .profileContainer div {
+  /* display: flex; */
+  display: grid;
+  grid-template-columns: 0.5fr 1fr;
+  /* gap: 25%; */
+}
+
+.profileContainer div:nth-child(1) {
   display: flex;
-  gap: 25%;
+}
+
+.profileContainer div p:nth-child(2) {
+  font-size: 18px;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+}
+
+.profileContainer div:nth-child(1) p:nth-child(2) {
+  color: rgba(130, 130, 130, 1);
+  font-weight: normal;
+}
+
+.bigFont {
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.titleFont {
+  font-weight: 400;
+  font-size: 36px;
+  margin: 0;
+  color: black;
+}
+
+.underTitle {
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.lightFont {
+  color: rgba(189, 189, 189, 1);
+  text-transform: uppercase;
+}
+
+.semiLightFont {
+  color: rgba(130, 130, 130, 1);
 }
 
 @media (min-width: 640px) {
