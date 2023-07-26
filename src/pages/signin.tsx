@@ -7,13 +7,14 @@ import styles from "../styles/Signin.module.css"
 import Image from "next/image";
 import githubPic from "../../public/Gihub.svg"
 import devChallengesLogo from "../../public/devchallenges.svg"
+import Link from "next/link";
 
 export default function signin({ providers, csrfToken }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
     return (
         <div className={styles.container}>
             <div className={styles.formContainer}>
-                <Image src={devChallengesLogo} alt="logo" />
+                <Image src="/devchallenges.svg" width={130} height={18} alt="logo" />
                 <p>Login</p>
           <form className={styles.form} method="post" action="/api/auth/callback/credentials">
                 <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
@@ -27,16 +28,16 @@ export default function signin({ providers, csrfToken }: InferGetServerSideProps
             {Object.values(providers).map((provider) => {
                 if (provider.name != "Credentials") return (
                     <div  key={provider.name}>
-                        <button onClick={() => signIn(provider.id)}>
-                            <Image src={githubPic} alt="github" width="45" height="45" />
+                        <button onClick={() => void signIn(provider.id)}>
+                            <Image src='/Gihub.svg' alt="github" width="45" height="45" />
                         </button>
                     </div>
                 )
             })}
                 </div>
-                <p>Don't have an account yet? <a href="/signup">Register</a></p>
+                <p>Don&apos;t have an account yet? <Link href='/signup'>Register</Link></p>
             </div>
-            <p>created by username</p>
+            <p>created by Jesus Venegas</p>
             <p>devChallenges.io</p>
         </div>
     );

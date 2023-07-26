@@ -50,7 +50,8 @@
 
 .dropDownContainer {
     position: relative;
-    width: 180px;
+    /* width: 180px; */
+    width: fit-content;
 }
 
 .profileBtn {
@@ -59,4 +60,10 @@
 .signBtn {
     color: red;
     cursor: pointer;
+}
+
+@media (max-width: 500px) {
+    .container {
+        padding: 0 1rem;
+    }
 }

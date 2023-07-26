@@ -1,6 +1,8 @@
 import styles from "./index.module.css";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import Nav from "~/components/Nav";
 
 export default function Home() {
@@ -23,7 +25,14 @@ export default function Home() {
 }
 
 function AuthShowcase() {
-  const { data: sessionData } = useSession();
+    const router = useRouter()
+  const { data: sessionData } = useSession({required: true,
+    onUnauthenticated() {
+      router
+      .push('/signin')
+      .catch((error) => console.error('Error navigating to sign in page: ' + String(error)))
+    }
+});
 
   // const { data: secretMessage } = api.example.getSecretMessage.useQuery(
   //   undefined, // no input
@@ -41,7 +50,7 @@ function AuthShowcase() {
             <p className={styles.bigFont}>Profile</p>
             <p className={styles.semiLightFont}>Some info may be visible to other people</p>
           </div>
-          <a href="/edit">Edit</a>
+          <Link href="/edit">Edit</Link>
         </div>
         <div>
           <p className={styles.lightFont}>Photo</p>

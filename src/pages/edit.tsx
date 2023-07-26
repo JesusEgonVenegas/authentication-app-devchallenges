@@ -1,12 +1,15 @@
 import axios from "axios";
 import styles from "../styles/Edit.module.css"
-import { signIn, signOut, useSession } from "next-auth/react";
+import { SessionProvider, getSession, signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import Nav from "~/components/Nav";
+import { getServerAuthSession } from "~/server/auth";
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import Link from "next/link";
 
 export default function Edit() {
  
@@ -28,7 +31,14 @@ export default function Edit() {
 }
 
 function AuthShowcase() {
-  const { data: sessionData } = useSession();
+  const { data: sessionData, update } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router
+      .push('/signin')
+      .catch((error) => console.error('Error navigating to sign in page: ' + String(error)))
+    }
+  });
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -42,18 +52,7 @@ function AuthShowcase() {
   const [submitDisabled, setSubmitDisabled] = useState(false)
   const apiUtils = api.useContext()
 
-  // const handleSubmit = async (e) => {
-  //     e.preventDefault()
-  //     try {
-  //         api.updateUser.updateUser.useMutation({
-  //             onMutate: async (a) => {
-  //                 a.name = name
-  //             }
-  //         })
-  //     } catch(error) {
-  //       console.log(error)
-  //     }
-  // }
+
   useEffect(() => {
   if (sessionData?.user) {
     setName(sessionData.user.name || '');
@@ -67,23 +66,27 @@ function AuthShowcase() {
   const editUser = api.updateUser.updateUser.useMutation();
     const router = useRouter()
 
-  const handleSubmit = useCallback(async (e: any) => {
+  const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
+    // Fix submitting form even without image change
     if (!sessionData?.user.userId || !sessionData) return;
     e.preventDefault();
+    let imageUrl = sessionData.user.image
 
     try {
+
       if (presignedUrl && image) {
         await axios.put(presignedUrl, image.slice(), {
           headers: { "Content-Type": image.type },
         });
         console.log("Successfully uploaded ", image.name);
 
-        const imageUrl = `https://auth-app-profile-pics.s3.us-west-1.amazonaws.com/${image.name}`;
+        imageUrl = `https://auth-app-profile-pics.s3.us-west-1.amazonaws.com/${image.name}`;
         console.log(imageUrl)
+      }
 
         // Update user data after the image is uploaded
         try {
-          await editUser.mutate({
+          editUser.mutate({
             id: sessionData.user.userId,
             name: name,
             email: email,
@@ -94,19 +97,19 @@ function AuthShowcase() {
           });
 
           // Update sessionData after the user data is edited
-          sessionData.user.name = name;
-          sessionData.user.email = email;
-          sessionData.user.bio = bio;
-          sessionData.user.phone = phone;
-          sessionData.user.password = password;
-          sessionData.user.image = imageUrl,
-
+          // sessionData.user.name = name;
+          // sessionData.user.email = email;
+          // sessionData.user.bio = bio;
+          // sessionData.user.phone = phone;
+          // sessionData.user.password = password;
+          // sessionData.user.image = imageUrl;
+          // update({name: name, email: email, bio: bio, phone: phone, password: password, image: imageUrl})
+          //  update()
           console.log("User data updated");
-          router.push('/')
         } catch (error) {
           console.log("Error editing user data:", error);
         }
-      }
+         await signOut()
     } catch (error) {
       console.log("Error uploading image:", error);
     }
@@ -125,8 +128,12 @@ function AuthShowcase() {
 
   return (
     <>
+
+    <div className={styles.backBtnContainer}>
+        <Link className={styles.backBtn} href="/"><ArrowBackIosIcon /> Back</Link>
+    </div>
       <div className={styles.editProfileContainer}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={() => void handleSubmit}>
         <div className={styles.top}>
           <div className={styles.topDivGap}>
       <h1 className={styles.bigFont}>Change info</h1>
@@ -134,7 +141,7 @@ function AuthShowcase() {
           </div>
         </div>
         <div className="changePhotoDiv">
-          <label htmlFor="photo" className={styles.photoLabel} style={{backgroundImage: `url(${sessionData?.user.image})`}}>
+          <label htmlFor="photo" className={styles.photoLabel} style={{backgroundImage: `url(${sessionData?.user.image || ""})`}}>
           <PhotoCameraIcon />
           </label>
           <p>CHANGE PHOTO</p>

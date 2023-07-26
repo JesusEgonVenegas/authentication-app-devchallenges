@@ -1,7 +1,8 @@
 import { JWT, encode, decode } from "next-auth/jwt"
 import { env } from "../env.mjs"
 import { User } from "@prisma/client"
-
+// @ts-ignore
+/* eslint-disable */
 export interface AuthUser extends Omit<User, "Password">{}
 
 export const tokenOneDay = 24 * 60 * 60;

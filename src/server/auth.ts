@@ -4,6 +4,7 @@ import {
   getServerSession,
   type NextAuthOptions,
   type DefaultSession,
+  Session,
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import GitHubProvider from "next-auth/providers/github";
@@ -11,7 +12,10 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
 import { AuthUser, jwtHelper, tokenOneDay, tokenOneWeek } from "~/utils/jwtHelper";
-
+import { GetSessionParams } from "next-auth/react";
+import { JWT } from "next-auth/jwt";
+// @ts-ignore
+/* eslint-disable */
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -32,6 +36,19 @@ import { AuthUser, jwtHelper, tokenOneDay, tokenOneWeek } from "~/utils/jwtHelpe
   //   // role: UserRole;
   // }
 // }
+interface Token {
+  user: {
+    name: string;
+    email: string;
+    bio: string;
+    image: string;
+    phone: string;
+    password: string;
+    id: number; // Assuming the id is of type number, replace it with the actual type if different
+  };
+  error: string;
+  // Add other properties of the token if needed
+}
 
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
@@ -44,7 +61,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 60 * 60
   },
   callbacks: {
-    async jwt({token, user, profile, account, isNewUser}){
+    async jwt({token, user, profile, account, isNewUser, trigger, session}){
       if (user) {
         const authUser = {id: user.id, name: user.name, email: user.email, bio: user.bio, image: user.image, phone: user.phone, password: user.password} as AuthUser;
 
@@ -65,7 +82,7 @@ export const authOptions: NextAuthOptions = {
             if (verifyToken) {
               const user = await prisma.user.findFirst({
                 where: {
-                  name: token.user.name
+                  name: token.user.name as string
                 }
               })
 
@@ -82,18 +99,24 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
+     if (trigger === 'update') {
+        token.user = {...token.user, ...session}
+        console.log(token, session, user)
+      }
+
       return token
     },
-    async session({ session, token}) {
-      if (token){
+
+    async session({ session, token }) {
+      if (token) {
         session.user = {
-          name: token.user.name,
-          email: token.user.email,
-          bio: token.user.bio,
-          image: token.user.image,
-          phone: token.user.phone,
-          password: token.user.password,
-          userId: token.user.id
+          name: token.user.name as string,
+          email: token.user.email as string,
+          bio: token.user.bio as string,
+          image: token.user.image as string,
+          phone: token.user.phone as string,
+          password: token.user.password as string,
+          userId: token.user.id as string
         }
       }
       session.error = token.error

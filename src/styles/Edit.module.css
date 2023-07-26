@@ -143,3 +143,29 @@
   border-radius: 8px;
   cursor: pointer;
 }
+
+.backBtnContainer {
+  display: flex;
+  justify-content: flex-start;
+  width: 80%;
+  margin-bottom: 1rem;
+}
+
+.backBtn {
+  color: rgba(45, 156, 219, 1);
+  display: flex;
+  text-align: left;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+@media (max-width: 500px) {
+  .editProfileContainer {
+    width: 100%;
+  }
+
+  .container {
+    padding: 0;
+  }
+}

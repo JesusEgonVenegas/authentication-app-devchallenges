@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/router'
 import styles from "../styles/Signup.module.css"
 import devChallengesLogo from "../../public/devchallenges.svg"
@@ -8,6 +8,7 @@ import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next'
 import { authOptions } from '~/server/auth'
 import { getProviders, signIn } from 'next-auth/react'
 import githubPic from "../../public/Gihub.svg"
+import Link from 'next/link'
 
 export default function Signup({providers}:InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function Signup({providers}:InferGetServerSidePropsType<typeof ge
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
 
-  const handleSubmit = async (event: any) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
@@ -25,17 +26,17 @@ export default function Signup({providers}:InferGetServerSidePropsType<typeof ge
     })
     if (res.ok) {
     //   router.push('/dashboard') // Redirect to dashboard or any other page
-        router.push('/')
+       await router.push('/')
     }
   }
 
   return (
     <div className={styles.container}>
       <div className={styles.formContainer}>
-      <Image src={devChallengesLogo} alt="logo" />
+      <Image src='/devchallenges.svg' width={130} height={18} alt="logo" />
       <p>Join thousands of learners from around the world</p>
       <p>Master web development by making real-life projects. There are mulutiple paths for you to choose</p>
-    <form className={styles.form} onSubmit={handleSubmit}>
+    <form className={styles.form} onSubmit={() => void handleSubmit}>
       <input
         type="email"
         placeholder="Email"
@@ -70,8 +71,8 @@ export default function Signup({providers}:InferGetServerSidePropsType<typeof ge
             {Object.values(providers).map((provider) => {
                 if (provider.name != "Credentials") return (
                     <div  key={provider.name}>
-                        <button onClick={() => signIn(provider.id)}>
-                            <Image src={githubPic} alt="github" width="45" height="45" />
+                        <button onClick={() => void signIn(provider.id)}>
+                            <Image src='/Gihub.svg' alt="github" width="45" height="45" />
                         </button>
                     </div>
                 )
@@ -79,9 +80,9 @@ export default function Signup({providers}:InferGetServerSidePropsType<typeof ge
                 </div>
     
 
-    <p>Already a member? <a href="/signin">Login</a></p>
+    <p>Already a member? <Link href="/signin">Login</Link></p>
     </div>
-    <p>created by username</p>
+    <p>created by Jesus Venegas</p>
     <p>devChallenges.io</p>
 </div>
   )

@@ -48,3 +48,11 @@
     padding: 5px 0;
     cursor: pointer;
 }
+
+@media (max-width: 500px) {
+    .formContainer {
+        width: 100%;
+        padding: 1rem;
+         border: transparent;
+    }
+}
