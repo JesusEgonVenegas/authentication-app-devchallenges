@@ -125,6 +125,7 @@
 @media (max-width: 500px) {
   .profileContainer {
     width: 100%;
+    border: transparent;
   }
 
   .container {
